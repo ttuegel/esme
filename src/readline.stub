@@ -1,0 +1,6 @@
+(c-system-include "readline/readline.h")
+(c-system-include "readline/history.h")
+
+(define-c string readline (string))
+
+(define-c void add_history (string))
