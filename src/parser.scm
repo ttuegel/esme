@@ -16,3 +16,6 @@
 
 (define skip-whitespace
   (parse-ignore (parse-token char-whitespace?)))
+
+(define parse-sep-by (f sep)
+  (parse-optional f (parse-repeat (parse-seq sep f))))
