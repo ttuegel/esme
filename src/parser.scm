@@ -13,3 +13,6 @@
 
 (define parse-word
   (parse-token char-word?))
+
+(define skip-whitespace
+  (parse-ignore (parse-token char-whitespace?)))
