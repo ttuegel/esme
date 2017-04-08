@@ -17,4 +17,5 @@
 (define-library (esme parse)
   (import (chibi)
           (except (chibi parse) parse-word parse-word+))
+  (export parse-word skip-whitespace parse-sep-by+)
   (include "parse.scm"))
