@@ -17,5 +17,12 @@
 (define-library (esme parse)
   (import (chibi)
           (except (chibi parse) parse-word parse-word+))
-  (export parse-word skip-whitespace parse-sep-by+)
+  (export parse-return parse-bind parse-do
+          parse-optional
+          parse-word parse-whitespace parse-optional-whitespace
+          parse-trim
+          parse-sep-by parse-sep-by+
+          parse-words parse-words+
+          parse-braces parse-parens
+          parse-progn parse-list)
   (include "parse.scm"))
