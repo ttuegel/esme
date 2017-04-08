@@ -33,27 +33,39 @@
 (define skip-whitespace
   (parse-ignore (parse-token char-whitespace?)))
 
-(define (parse-sep-by+ elem sep)
-  (lambda (src ix succ fail-top)
-    (elem src ix
-          (lambda (result src ix fail)
-            (let loop
-                 ((result (list result))
-                  ;; backtrack to this source and index if we fail to parse another elem
-                  (src-back src)
-                  (ix-back ix))
-              (let
-                  ((end
-                    ;; succeed with backtracking upon allowed failure
-                    (lambda (src ix reason)
-                      (succ (reverse result) src-back ix-back fail-top)))
-                   (next
-                    ;; store result and iterate upon success
-                    (lambda (r src ix fail)
-                      (loop (cons r result) src ix))))
+(define (parse-bind parse a->parse)
+  (lambda (src ix succeed fail)
+    (let ((next (lambda (a src ix fail) ((a->parse a) src ix succeed fail))))
+      (parse src ix next fail))))
 
-                (sep src-back ix-back
-                     (lambda (r src ix fail-sep) (elem src ix next end))
-                     end))))
-            ;; failure: parsed no element
-            fail-top)))
+(define (parse-return a)
+  (lambda (src ix succeed fail) (succeed a src ix fail)))
+
+(define-syntax parse-do
+  (syntax-rules (<-)
+    ;; terminal statement is unmodified
+    ((_ e) e)
+
+    ;; bind var in e2 to result of e1
+    ((_ (<- var e1) e2 ...)
+     (parse-bind e1 (lambda (var) (parse-do e2 ...))))
+
+    ;; sequence e1 and e2, ignoring the result of e1
+    ((_ e1 e2 ...)
+     (parse-bind e1 (lambda (_) (parse-do e2 ...))))))
+
+(define (parse-sep-by+ elem sep)
+  (parse-do
+   (<- e elem)
+   (let loop ((result (list e)))
+     (parse-or
+      (parse-do
+       sep
+       (<- e elem)
+       (loop (cons e result)))
+      (parse-return (reverse result))))))
+
+(define (parse-sep-by elem sep)
+  (parse-or
+   (parse-sep-by+ elem sep)
+   (parse-return '())))
